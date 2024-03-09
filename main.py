@@ -2,10 +2,10 @@ import cv2
 import time
 def frame_difference_threshold(video_path, threshold):
     cap = cv2.VideoCapture(video_path)
+    
     frame = 0
     # Read the first frame
     ret, prev_frame = cap.read()
-
     start_time = time.time()
     while True:
         # Read the next frame
@@ -27,14 +27,22 @@ def frame_difference_threshold(video_path, threshold):
         # Calculate the mean of the absolute difference
         mean_diff = frame_diff.mean()
         print(mean_diff)
+        
+        elapsed_time = time.time() - start_time
         # If the mean difference exceeds the threshold, return
-        if mean_diff > threshold:
-            end_time = time.time()
-            print(end_time - start_time)
-            return prev_frame, next_frame
-
-        # Update the previous frame
-        prev_frame = next_frame
+        if elapsed_time >= 1:
+            print(str(elapsed_time) +" Second Passed")
+            start_time = time.time()
+            if mean_diff > threshold:
+                end_time = time.time()
+                print(end_time - start_time)
+                return prev_frame, next_frame
+            prev_frame = next_frame 
+            # Update the previous frame
+            
+        
+        
+        
 
     # Release the video capture object
     cap.release()

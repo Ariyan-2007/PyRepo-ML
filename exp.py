@@ -1,16 +1,19 @@
 import cv2
+import time
 
 def histogram_difference_threshold(video_path, threshold):
     cap = cv2.VideoCapture(video_path)
+
     frame = 0
     # Read the first frame
     ret, prev_frame = cap.read()
-    
+    start_time = time.time()
     while True:
         # Read the next frame
+        frame += 1
+        print("Rendering Frame:", frame)
         ret, next_frame = cap.read()
-        frame= frame+1
-        print("Rendering Frame: "+str(frame))
+
         # If unable to read the frame, break the loop
         if not ret:
             break
@@ -24,16 +27,18 @@ def histogram_difference_threshold(video_path, threshold):
         hist_next = cv2.calcHist([next_gray], [0], None, [256], [0, 256])
 
         # Calculate histogram intersection
-        hist_intersection = cv2.compareHist(hist_prev, hist_next, cv2.HISTCMP_INTERSECT)
-
-        # If the histogram intersection exceeds the threshold, return
+        hist_intersection = cv2.compareHist(hist_prev, hist_next, cv2.HISTCMP_INTERSECT)/10000
         print(hist_intersection)
-        if hist_intersection > threshold:
-            return prev_frame, next_frame
-
-        # Update the previous frame
-        prev_frame = next_frame
-
+        elapsed_time = time.time() - start_time
+        # If one second has elapsed, check if the histogram intersection exceeds the threshold
+        if elapsed_time >= 1:
+            print(str(elapsed_time) + " Second Passed")
+            start_time = time.time()
+            
+            if hist_intersection > threshold:
+                return prev_frame, next_frame
+            prev_frame = next_frame  # Update the previous frame
+        
     # Release the video capture object
     cap.release()
 
@@ -41,8 +46,9 @@ def histogram_difference_threshold(video_path, threshold):
     return None, None
 
 # Example usage
-video_path = 'Recording.mp4'
-threshold = 2073600 # Adjust threshold as needed
+video_path = 'CCTV.mp4'
+threshold = 80 # Adjust threshold as needed
+
 prev_frame, next_frame = histogram_difference_threshold(video_path, threshold)
 
 # Do something with the frames if a significant difference is found
