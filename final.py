@@ -2,41 +2,42 @@ import time
 import cv2
 import numpy as np
 
-def compare_frame(count,target_frame, threshold=10):
+class Frame:
     
-    # Read From Device
-    reference_frame = cv2.imread('reference.jpg')
+    def __init__(self):        
+        self.reference_frame = np.zeros((100, 100, 3), dtype=np.uint8)
     
-    # Assign Frame
-    if reference_frame is None:
-        height, width, channels = target_frame.shape
-        reference_frame = np.zeros((height, width, channels), dtype=np.uint8)
-        cv2.imwrite('reference.jpg', reference_frame)
-        cv2.imread('reference.jpg')
-    
-    # Convert -> Gray Scale
-    reference_gray = cv2.cvtColor(reference_frame, cv2.COLOR_BGR2GRAY)
-    target_gray = cv2.cvtColor(target_frame, cv2.COLOR_BGR2GRAY)
-    
-    # Calculate Absolute Difference
-    frame_diff = cv2.absdiff(reference_gray, target_gray)
-    
-    # Calculate Mean Of Absolute Difference
-    mean_diff = frame_diff.mean()
-    
-    # Write To Device
-    cv2.imwrite('reference.jpg', target_frame)
-    
-    if mean_diff > threshold:
-        cv2.imwrite('changes/changed'+str(count)+'.jpg', target_frame)
-
+    def compare_frame(self,count, target_frame, threshold=8):
+        
+        if(self.reference_frame.shape != target_frame.shape):
+            height, width, channels = target_frame.shape
+            self.reference_frame = np.zeros((height,width,channels), dtype=np.uint8)
+            
+        # Convert -> Gray Scale
+        reference_gray = cv2.cvtColor(self.reference_frame, cv2.COLOR_BGR2GRAY)
+        target_gray = cv2.cvtColor(target_frame, cv2.COLOR_BGR2GRAY)
+        
+        # Calculate Absolute Difference
+        frame_diff = cv2.absdiff(reference_gray, target_gray)
+        
+        # Calculate Mean Of Absolute Difference
+        mean_diff = frame_diff.mean()
+        
+        
+        start_time = time.time()
+        if mean_diff > threshold:
+            cv2.imwrite('changes/changed'+str(count)+'.jpg', target_frame)
+            # return target_frame
+            self.reference_frame = target_frame
+        elapsed_time = time.time() - start_time
+        print(str(elapsed_time) +" Second Passed")
     
 def capture_frame(video_path):
     # Start Capturing Frame
     cap = cv2.VideoCapture(video_path)
+    fps = cap.get(cv2.CAP_PROP_FPS)
     
     count=0
-    
     # Start Timer
     start_time = time.time()
     while True:
@@ -49,28 +50,33 @@ def capture_frame(video_path):
             break
         
         # Caculate Elapsed Time
-        elapsed_time = time.time() - start_time
-        
+        elapsed_time = time.time() - start_time    
+        # count+=1
         # Check if Elapsed Time has passed a second
         if elapsed_time >= 0.1:                           
             print(str(elapsed_time) +" Second Passed")
-            start_time = time.time()            
+            # print(elapsed_time, count, fps)
+            start_time = time.time()  
+            # count=0          
             # Write To Device
             cv2.imwrite('frames/frame'+str(count)+'.jpg', frame)
             count+= 1
-    
-    
-    # Release the video capture object
+
+    # elapsed_time = time.time() - start_time
+    # print(elapsed_time, count, fps)
+    # # Release the video capture object
     cap.release()
     
     return count
 
             
-count = capture_frame('CCTV.mp4')
+count= capture_frame('CCTV.mp4')
+# count = capture_frame('rtsp://admin:admin@192.168.1.106:554/1/h264major')
 print(count)
+frame = Frame();
 for i in range(count):
     
     target_frame = cv2.imread('frames/frame'+str(i)+'.jpg')
-    compare_frame(count=i,target_frame=target_frame)
+    frame.compare_frame(count=i,target_frame=target_frame)
     
     
