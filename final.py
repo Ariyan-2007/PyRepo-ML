@@ -6,8 +6,8 @@ class Frame:
     
     def __init__(self):        
         self.reference_frame = np.zeros((100, 100, 3), dtype=np.uint8)
-    
-    def compare_frame(self,count, target_frame, threshold=8):
+        self.last_output_time = time.time()
+    def compare_frame(self, target_frame, threshold=8):
         
         if(self.reference_frame.shape != target_frame.shape):
             height, width, channels = target_frame.shape
@@ -23,18 +23,20 @@ class Frame:
         # Calculate Mean Of Absolute Difference
         mean_diff = frame_diff.mean()
         
-        
-        start_time = time.time()
-        if mean_diff > threshold:
-            cv2.imwrite('changes/changed'+str(count)+'.jpg', target_frame)
-            # return target_frame
+        current_time = time.time()
+        elapsed_time = current_time - self.last_output_time
+        print(elapsed_time)
+        if mean_diff > threshold or elapsed_time >=60:
+            self.last_output_time = current_time
             self.reference_frame = target_frame
-        elapsed_time = time.time() - start_time
-        print(str(elapsed_time) +" Second Passed")
+            return True
+
+        return None
+
     
 def capture_frame(video_path):
     # Start Capturing Frame
-    cap = cv2.VideoCapture(video_path)
+    cap = cv2.VideoCapture('rtsp://admin:admin@192.168.1.105:554/1/h264major')
     fps = cap.get(cv2.CAP_PROP_FPS)
     
     count=0
@@ -48,7 +50,6 @@ def capture_frame(video_path):
         # If unable to read the frame, break the loop
         if not ret:
             break
-        
         # Caculate Elapsed Time
         elapsed_time = time.time() - start_time    
         # count+=1
@@ -73,10 +74,14 @@ def capture_frame(video_path):
 count= capture_frame('CCTV.mp4')
 # count = capture_frame('rtsp://admin:admin@192.168.1.106:554/1/h264major')
 print(count)
-frame = Frame();
+frame = Frame()
 for i in range(count):
     
     target_frame = cv2.imread('frames/frame'+str(i)+'.jpg')
-    frame.compare_frame(count=i,target_frame=target_frame)
-    
+    acquired_frame = frame.compare_frame(target_frame=target_frame) 
+    if acquired_frame:
+        print("Call API & Pass Acquired Frame")
+        cv2.imwrite('changes/frame'+str(count)+'.jpg', target_frame)        
+    else:
+        print("Null")
     
