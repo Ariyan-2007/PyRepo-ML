@@ -27,7 +27,7 @@ def histogram_difference_threshold(video_path, threshold):
         hist_next = cv2.calcHist([next_gray], [0], None, [256], [0, 256])
 
         # Calculate histogram intersection
-        hist_intersection = cv2.compareHist(hist_prev, hist_next, cv2.HISTCMP_INTERSECT)/10000
+        hist_intersection = cv2.compareHist(hist_prev, hist_next, cv2.HISTCMP_INTERSECT)/100000
         print(hist_intersection)
         elapsed_time = time.time() - start_time
         # If one second has elapsed, check if the histogram intersection exceeds the threshold
@@ -46,8 +46,8 @@ def histogram_difference_threshold(video_path, threshold):
     return None, None
 
 # Example usage
-video_path = 'CCTV.mp4'
-threshold = 80 # Adjust threshold as needed
+video_path = 'rtsp://admin:admin@192.168.1.106:554/1/h264major'
+threshold = 25 # Adjust threshold as needed
 
 prev_frame, next_frame = histogram_difference_threshold(video_path, threshold)
 

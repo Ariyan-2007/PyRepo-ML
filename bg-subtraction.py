@@ -43,7 +43,7 @@ def background_subtraction_threshold(video_path, threshold):
     return None, None
 
 # Example usage
-video_path = 'CCTV.mp4'
+video_path = 'rtsp://admin:admin@192.168.1.106:554/1/h264major'
 threshold = 5  # Adjust threshold as needed
 
 prev_frame, next_frame = background_subtraction_threshold(video_path, threshold)

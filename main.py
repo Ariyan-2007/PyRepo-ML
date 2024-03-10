@@ -39,7 +39,8 @@ def frame_difference_threshold(video_path, threshold):
                 return prev_frame, next_frame
             prev_frame = next_frame 
             # Update the previous frame
-            
+        
+        # cv2.imshow('Previous Frame', prev_frame)
         
         
         
@@ -51,7 +52,7 @@ def frame_difference_threshold(video_path, threshold):
     return None, None
 
 # Example usage
-video_path = 'CCTV.mp4'
+video_path = 'rtsp://admin:admin@192.168.1.106:554/1/h264major'
 threshold = 10 # Adjust threshold as needed
 
 prev_frame, next_frame = frame_difference_threshold(video_path, threshold)
